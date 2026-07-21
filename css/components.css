@@ -1,0 +1,109 @@
+/* 
+  My Friend Turtle - Components CSS
+  글래스모피즘 카드, 버튼 마이크로 인터랙션 및 특수 애니메이션을 관리합니다.
+*/
+
+/* 1. 글래스모피즘 카드 공통 */
+.glass-card {
+  background: var(--bg-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid var(--border-glass);
+  border-radius: 24px;                  /* 동글동글한 모서리 */
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+}
+
+/* 2. 상태에 따른 카드 테두리 및 글로우 효과 */
+.status-card-correct {
+  border-color: rgba(52, 211, 153, 0.4);
+  box-shadow: var(--shadow-neon-mint), 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.status-card-warning {
+  border-color: rgba(248, 113, 113, 0.4);
+  box-shadow: var(--shadow-neon-peach), 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.status-card-analyzing {
+  border-color: rgba(96, 165, 250, 0.4);
+  box-shadow: var(--shadow-neon-sky), 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.status-card-pending {
+  border-color: rgba(251, 191, 36, 0.4);
+  box-shadow: var(--shadow-neon-yellow), 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* 3. 친근한 다정 버튼 스타일 */
+.btn-friendly {
+  background: linear-gradient(135deg, #3B82F6, #2563EB);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 16px;
+  padding: 12px 24px;
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn-friendly:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.35);
+  filter: brightness(1.1);
+}
+
+.btn-friendly:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.btn-friendly:disabled {
+  background: var(--color-gray);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* 4. 애니메이션 효과 */
+
+/* 거북이 둥둥 뜨는 모션 */
+.float-animation {
+  animation: float-around 3s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes float-around {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1.5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* 경고 알림 쉐이크 효과 */
+.shake-animation {
+  animation: shake 0.45s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+  40%, 60% { transform: translate3d(3px, 0, 0); }
+}
+
+/* 말풍선 확대 팝 모션 */
+.pop-animation {
+  transform-origin: bottom center;
+  animation: pop-bubble 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes pop-bubble {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
