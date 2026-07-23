@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>거북목 자세 코치 - 컴포넌트 디자인 데모</title>
+  <link rel="stylesheet" href="./css/theme.css">
+  <link rel="stylesheet" href="./css/components.css">
+  
+  <!-- Web Components 로드 -->
+  <script type="module" src="./js/components/CameraViewer.js"></script>
+  <script type="module" src="./js/components/ControlPanel.js"></script>
+  <script type="module" src="./js/components/StatusCard.js"></script>
+  <script type="module" src="./js/components/TurtleCharacter.js"></script>
+
+  <style>
+    /* 데모 레이아웃 조절용 */
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    /* 상단 시뮬레이터 조작툴 */
+    .simulator-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 2px dashed #3B82F6;
+      border-radius: 20px;
+      padding: 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sim-title {
+      font-family: 'Jua', sans-serif;
+      font-size: 20px;
+      color: #60A5FA;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sim-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .sim-control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sim-control-group label {
+      font-family: 'Jua', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .sim-select, .sim-slider {
+      background: #1e293b;
+      border: 1px solid var(--border-glass);
+      color: var(--text-primary);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+    }
+
+    .event-log-panel {
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      background: #020617;
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 12px;
+      color: #34D399;
+      height: 80px;
+      overflow-y: auto;
+      width: 100%;
+    }
+
+    /* 2열 대시보드 레이아웃 */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .right-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 데모 전용 헤더 */
+    .demo-header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .demo-header h1 {
+      font-size: 36px;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .demo-header p {
+      color: var(--text-secondary);
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="demo-container">
+    
+    <!-- 1. 데모 헤더 -->
+    <header class="demo-header">
+      <h1>거북목 자세 코치 🐢</h1>
+      <p>컴포넌트 디자인 가이드라인 통합 시각화 데모 페이지</p>
+    </header>
+
+    <!-- 2. 시뮬레이션 제어 컨트롤 패널 (실제 연동을 에뮬레이트) -->
+    <div class="simulator-panel">
+      <div class="sim-title">
+        <span>🛠️ 실시간 시뮬레이터 조작 툴</span>
+      </div>
+      
+      <div class="sim-controls">
+        <!-- 상태 선택 -->
+        <div class="sim-control-group">
+          <label for="state-select">거북이 상태 변경:</label>
+          <select id="state-select" class="sim-select">
+            <option value="pending">보정 대기 중 (Pending)</option>
+            <option value="analyzing">분석 진행 중 (Analyzing)</option>
+            <option value="correct">바른 자세 유지 (Correct)</option>
+            <option value="warning">거북목 자세 감지 (Warning)</option>
+            <option value="failed">인식 실패 오류 (Failed)</option>
+          </select>
+        </div>
+
+        <!-- 현재 각도 슬라이더 -->
+        <div class="sim-control-group">
+          <label for="current-angle-range">현재 각도 (θ):</label>
+          <input type="range" id="current-angle-range" class="sim-slider" min="0" max="60" value="10">
+          <span id="current-angle-display">10°</span>
+        </div>
+
+        <!-- 기준 각도 슬라이더 -->
+        <div class="sim-control-group">
+          <label for="base-angle-range">기준 각도 (θ_base):</label>
+          <input type="range" id="base-angle-range" class="sim-slider" min="0" max="45" value="10">
+          <span id="base-angle-display">10°</span>
+        </div>
+      </div>
+
+      <!-- 클릭 액션 이벤트 로그 모니터 -->
+      <div style="width: 100%; margin-top: 15px;">
+        <div style="font-family: 'Jua', sans-serif; font-size: 14px; margin-bottom: 5px; color: var(--text-secondary);">컴포넌트 발송 이벤트 로그:</div>
+        <div class="event-log-panel" id="log-monitor">> 시뮬레이터 준비 완료. 버튼을 눌러 이벤트를 테스트하세요.</div>
+      </div>
+    </div>
+
+    <!-- 3. 실 대시보드 레이아웃 (그리드) -->
+    <main class="dashboard-grid">
+      
+      <!-- 좌측: 카메라 뷰어 컴포넌트 -->
+      <camera-viewer id="camera-comp" status="pending"></camera-viewer>
+      
+      <!-- 우측: 거북이 및 대시보드 컴포넌트 사이드바 -->
+      <div class="right-sidebar">
+        
+        <!-- 거북이 캐릭터 컴포넌트 -->
+        <turtle-character id="turtle-comp" status="pending"></turtle-character>
+        
+        <!-- 실시간 상태 및 각도 게이지 카드 -->
+        <status-card id="status-comp" current-angle="10" base-angle="10"></status-card>
+        
+        <!-- 버튼 제어 패널 컴포넌트 -->
+        <control-panel id="control-comp" arduino-connected="false" camera-active="false"></control-panel>
+        
+      </div>
+      
+    </main>
+
+  </div>
+
+  <!-- 데모 제어용 스크립트 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. 컴포넌트 인스턴스 획득
+      const cameraComp = document.getElementById('camera-comp');
+      const turtleComp = document.getElementById('turtle-comp');
+      const statusComp = document.getElementById('status-comp');
+      const controlComp = document.getElementById('control-comp');
+
+      // 2. 조작 툴 컨트롤 요소 획득
+      const stateSelect = document.getElementById('state-select');
+      const currentSlider = document.getElementById('current-angle-range');
+      const baseSlider = document.getElementById('base-angle-range');
+      const currentDisplay = document.getElementById('current-angle-display');
+      const baseDisplay = document.getElementById('base-angle-display');
+      const logMonitor = document.getElementById('log-monitor');
+
+      // 3. 상태 시뮬레이션 연동 함수
+      stateSelect.addEventListener('change', (e) => {
+        const state = e.target.value;
+        
+        // 각 컴포넌트의 status 속성 업데이트 (Web Components 반응 속성)
+        cameraComp.setAttribute('status', state);
+        turtleComp.setAttribute('status', state);
+        
+        log(`시스템 상태 강제 변경 ➡️ "${state}"`);
+      });
+
+      // 4. 각도 슬라이더 실시간 조절 연동
+      function updateAngles() {
+        const currentVal = currentSlider.value;
+        const baseVal = baseSlider.value;
+        
+        currentDisplay.textContent = `${currentVal}°`;
+        baseDisplay.textContent = `${baseVal}°`;
+        
+        statusComp.setAttribute('current-angle', currentVal);
+        statusComp.setAttribute('base-angle', baseVal);
+
+        // 변화량(current - base) 계산
+        const delta = Math.max(0, currentVal - baseVal);
+        
+        // 거북이 캐릭터 컴포넌트에 실시간 delta-angle 전송 (목 각도 연동용)
+        turtleComp.setAttribute('delta-angle', delta);
+
+        // 15도 이상이면 자동으로 warning 테마 시뮬레이션
+        if (stateSelect.value !== 'failed' && stateSelect.value !== 'pending' && stateSelect.value !== 'analyzing') {
+          if (delta >= 15) {
+            stateSelect.value = 'warning';
+            cameraComp.setAttribute('status', 'warning');
+            turtleComp.setAttribute('status', 'warning');
+          } else {
+            stateSelect.value = 'correct';
+            cameraComp.setAttribute('status', 'correct');
+            turtleComp.setAttribute('status', 'correct');
+          }
+        }
+      }
+
+      currentSlider.addEventListener('input', updateAngles);
+      baseSlider.addEventListener('input', updateAngles);
+
+      // 5. 컴포넌트 발행 커스텀 이벤트 가로채서 시뮬레이션 반응 주기
+      document.addEventListener('camera-toggle', () => {
+        const isActive = controlComp.getAttribute('camera-active') === 'true';
+        const nextState = !isActive;
+        
+        controlComp.setAttribute('camera-active', nextState.toString());
+        
+        if (nextState) {
+          stateSelect.value = 'analyzing';
+          cameraComp.setAttribute('status', 'analyzing');
+          turtleComp.setAttribute('status', 'analyzing');
+          log('이벤트 [camera-toggle]: 카메라 전원 켬 🟢');
+          
+          // 임시 랜드마크 드로잉 에뮬레이션
+          simulateDummySkeleton();
+        } else {
+          stateSelect.value = 'pending';
+          cameraComp.setAttribute('status', 'pending');
+          turtleComp.setAttribute('status', 'pending');
+          log('이벤트 [camera-toggle]: 카메라 전원 끔 🔴');
+          stopSkeletonSimulation();
+        }
+      });
+
+      document.addEventListener('calibrate-trigger', () => {
+        // 현재 각도를 기준 각도로 보정
+        baseSlider.value = currentSlider.value;
+        updateAngles();
+        log(`이벤트 [calibrate-trigger]: 현재 각도(${currentSlider.value}°)를 기준 자세로 설정 완료! 📸`);
+      });
+
+      document.addEventListener('arduino-connect', () => {
+        const isConnected = controlComp.getAttribute('arduino-connected') === 'true';
+        const nextState = !isConnected;
+        
+        controlComp.setAttribute('arduino-connected', nextState.toString());
+        log(`이벤트 [arduino-connect]: 아두이노 연결 상태 변경 ➡️ ${nextState ? '연결됨' : '연결해제'}`);
+      });
+
+      // 6. 스켈레톤 드로잉 시뮬레이션 타이머
+      let skeletonInterval = null;
+      function simulateDummySkeleton() {
+        if (skeletonInterval) clearInterval(skeletonInterval);
+        
+        // 목 각도 변화를 주기 위해 삼각함수로 랜드마크 궤적 왜곡
+        let angleSeed = 0;
+        skeletonInterval = setInterval(() => {
+          angleSeed += 0.05;
+          const shift = Math.sin(angleSeed) * 0.06; // 앞뒤 흔들림
+
+          // 더미 랜드마크 33개 설정
+          const dummyLandmarks = [];
+          for (let i = 0; i < 33; i++) {
+            dummyLandmarks.push({ x: 0.5, y: 0.5, visibility: 0.8 });
+          }
+
+          // 귀 (인덱스 8 - 오른쪽 귀 기준 시뮬레이션)
+          // 기본 위치: x=0.45, y=0.25
+          const earX = 0.45 + shift; 
+          const earY = 0.25;
+          dummyLandmarks[8] = { x: earX, y: earY, visibility: 0.9 };
+
+          // 어깨 (인덱스 12 - 오른쪽 어깨)
+          // 기본 위치: x=0.43, y=0.55
+          const shoulderX = 0.43;
+          const shoulderY = 0.55;
+          dummyLandmarks[12] = { x: shoulderX, y: shoulderY, visibility: 0.9 };
+
+          // 몸통 라인 드로잉을 위한 다른 좌표들
+          dummyLandmarks[11] = { x: 0.57, y: 0.55, visibility: 0.9 }; // 왼쪽 어깨
+          dummyLandmarks[24] = { x: 0.45, y: 0.85, visibility: 0.8 }; // 오른쪽 골반
+          dummyLandmarks[23] = { x: 0.55, y: 0.85, visibility: 0.8 }; // 왼쪽 골반
+
+          // 실시간 계산된 각도 구하기 (수식: arctan2(dx, dy) * 180 / PI)
+          const dx = Math.abs(earX - shoulderX);
+          const dy = Math.abs(shoulderY - earY);
+          const calculatedAngle = Math.atan2(dx, dy) * (180 / Math.PI);
+
+          // 실시간 각도를 슬라이더 및 status-card에 전송
+          currentSlider.value = Math.round(calculatedAngle * 1.5); // 배율 조정
+          updateAngles();
+
+          // 카메라 컴포넌트의 내부 그리기 메서드 호출
+          cameraComp.drawSkeleton(
+            dummyLandmarks, 
+            { x: earX, y: earY, index: 8 }, 
+            { x: shoulderX, y: shoulderY, index: 12 }
+          );
+        }, 100);
+      }
+
+      function stopSkeletonSimulation() {
+        if (skeletonInterval) {
+          clearInterval(skeletonInterval);
+          skeletonInterval = null;
+        }
+        // 캔버스 비우기
+        cameraComp.drawSkeleton(null);
+      }
+
+      // 로그 출력 헬퍼
+      function log(msg) {
+        const time = new Date().toLocaleTimeString();
+        logMonitor.innerHTML = `> [${time}] ${msg}\n` + logMonitor.innerHTML.split('\n').slice(0, 4).join('\n');
+      }
+
+      // 초기 리사이즈 및 레이아웃 대기
+      setTimeout(() => updateAngles(), 150);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>거북목 자세 코치 🐢</title>
+  
+  <!-- 스타일 시트 연동 (디자인 가이드라인 준수) -->
+  <link rel="stylesheet" href="./css/theme.css">
+  <link rel="stylesheet" href="./css/components.css">
+
+  <!-- MediaPipe Pose 관련 CDN 로드 (영상 분석용) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+  <!-- Web Components 모듈식 임포트 -->
+  <script type="module" src="./js/components/CameraViewer.js"></script>
+  <script type="module" src="./js/components/ControlPanel.js"></script>
+  <script type="module" src="./js/components/StatusCard.js"></script>
+  <script type="module" src="./js/components/TurtleCharacter.js"></script>
+  
+  <!-- 메인 오케스트레이터 비즈니스 로직 연동 -->
+  <script type="module" src="./js/main.js"></script>
+
+  <style>
+    /* 1. 메인 레이아웃 및 뷰포트 최적화 */
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* 상단 헤더 영역 */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-glass);
+      margin-bottom: 12px;
+    }
+
+    .app-header h1 {
+      font-size: 28px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .manufacturer-info {
+      font-family: 'Jua', sans-serif;
+      font-size: 14px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-glass);
+    }
+
+    /* 대시보드 2열 그리드 구조 (디자인 가이드) */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* 우측 사이드바 컬럼 */
+    .right-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* 모바일 반응형 처리 */
+    @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- 2. 상단 헤더 영역 -->
+    <header class="app-header">
+      <h1>거북목 자세 코치 🐢</h1>
+      <div class="manufacturer-info">제조바이브 IoT 연동 시스템</div>
+    </header>
+
+    <!-- 3. 대시보드 그리드 레이아웃 -->
+    <main class="dashboard-grid">
+      
+      <!-- 왼쪽 열: 관찰 카메라 및 랜드마크 스켈레톤 뷰어 -->
+      <camera-viewer id="camera-viewer" status="pending"></camera-viewer>
+      
+      <!-- 오른쪽 열: 코치 거북이, 상태 대시보드, 컨트롤 패널 -->
+      <div class="right-sidebar">
+        
+        <!-- 코치 거북이 캐릭터 컴포넌트 -->
+        <turtle-character id="turtle-character" status="pending"></turtle-character>
+        
+        <!-- 수치 상태 대시보드 카드 -->
+        <status-card id="status-card" current-angle="0" base-angle="0"></status-card>
+        
+        <!-- 제어 패널 카드 -->
+        <control-panel id="control-panel" arduino-connected="false" camera-active="false"></control-panel>
+        
+      </div>
+
+    </main>
+
+  </div>
+
+
+</body>
+</html>
